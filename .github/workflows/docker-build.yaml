@@ -1,0 +1,52 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main  # Build when pushing to the main branch
+  pull_request:
+    branches:
+      - main  # Optionally, run on pull requests to main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Step 3: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}  # Docker Hub username stored in GitHub secrets
+          password: ${{ secrets.DOCKER_PASSWORD }}  # Docker Hub password stored in GitHub secrets
+
+      # Step 4: Set up tags for the image
+      - name: Set up Docker image tags
+        id: docker_meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_USERNAME }}/Ollabotica
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ github.sha }}
+            type=ref,event=branch
+
+      # Step 5: Build and push the Docker image
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.docker_meta.outputs.tags }}
+
+      # Step 6: Post build information to the GitHub repository
+      - name: Image digest
+        run: echo "Image was pushed with digest ${{ steps.docker_meta.outputs.digest }}"
