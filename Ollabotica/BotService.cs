@@ -20,14 +20,16 @@ public class BotService : IBotService
     private OllamaApiClient _ollamaClient;
     private readonly ILogger<BotService> _logger;
     private readonly MessageInputRouter _messageInputRouter;
+    private readonly MessageOutputRouter _messageOutputRouter;
     private OllamaSharp.Chat _ollamaChat;
     private CancellationTokenSource _cts;
 
     // Inject all required dependencies via constructor
-    public BotService(ILogger<BotService> logger, MessageInputRouter messageInputRouter)
+    public BotService(ILogger<BotService> logger, MessageInputRouter messageInputRouter, MessageOutputRouter messageOutputRouter)
     {
         _logger = logger;
         _messageInputRouter = messageInputRouter;
+        _messageOutputRouter = messageOutputRouter;
         _cts = new CancellationTokenSource();
     }
 
@@ -86,7 +88,7 @@ public class BotService : IBotService
                                 await _telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
                             }
 
-                            await _telegramClient.SendTextMessageAsync(message.Chat.Id, text, cancellationToken: cancellationToken);
+                            await _messageOutputRouter.Route(message, prompt, _ollamaChat, _telegramClient, isAdmin, text);
                         }
                     }
                     catch (Exception e)

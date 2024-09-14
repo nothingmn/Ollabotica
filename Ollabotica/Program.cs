@@ -67,10 +67,12 @@ public class Program
                 });
 
                 services.AddSingleton<MessageInputRouter>();
+                services.AddSingleton<MessageOutputRouter>();
                 //services.AddTransient<IMessageInputProcessor, PromptFillingInputProcessor>();
                 services.AddTransient<IMessageInputProcessor, StartNewConversationInputProcessor>();
                 services.AddTransient<IMessageInputProcessor, DiagnosticsInputProcessor>();
                 //services.AddTransient<IMessageInputProcessor, EchoUserTextInputProcessor>();
+                services.AddTransient<IMessageOutputProcessor, BasicChatOutputProcessor>();
 
                 services.AddHostedService<BotHostedService>();
             });

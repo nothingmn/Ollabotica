@@ -13,21 +13,21 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Ollabotica.InputProcessors;
 
-public class EchoUserTextInputProcessor : IMessageInputProcessor
+public class BasicChatOutputProcessor : IMessageOutputProcessor
 {
     private readonly ILogger<BasicChatOutputProcessor> _log;
 
-    public EchoUserTextInputProcessor(ILogger<BasicChatOutputProcessor> log)
+    public BasicChatOutputProcessor(ILogger<BasicChatOutputProcessor> log)
     {
         _log = log;
     }
 
-    public async Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin)
+    public async Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, string ollamaOutputText)
     {
-        _log.LogInformation("Received message:{messageText}", message.Text);
+        _log.LogInformation("Received message:{messageText}, ollama responded with:", message.Text, ollamaOutputText);
 
         await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-        await telegramClient.SendTextMessageAsync(message.Chat.Id, $"You said:\n\"{message.Text}\"");
+        await telegramClient.SendTextMessageAsync(message.Chat.Id, ollamaOutputText);
         return false;
     }
 }

@@ -12,3 +12,8 @@ public interface IMessageInputProcessor
 {
     Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin);
 }
+
+public interface IMessageOutputProcessor
+{
+    Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, string ollamaOutputText);
+}

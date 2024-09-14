@@ -39,7 +39,7 @@ Docker Compose, if your into that sort of thing
 version: '3'
 services:
   service1:
-    image: robchartier/Ollabotica:latest
+    image: robchartier/ollabotica:latest
     container_name: telegram-bot-1
     restart: unless-stopped
     volumes:
