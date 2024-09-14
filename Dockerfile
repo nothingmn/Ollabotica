@@ -8,7 +8,7 @@ WORKDIR /app
 RUN dotnet nuget add source https://pkgs.dev.azure.com/tgbots/Telegram.Bot/_packaging/release/nuget/v3/index.json -n Telegram.Bot
 
 # Copy the .csproj file and restore any dependencies from both default and custom sources
-COPY Ollabotica.csproj ./
+COPY Ollabotica/Ollabotica.csproj ./
 RUN dotnet restore
 
 # Copy the rest of the application source code
