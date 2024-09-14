@@ -39,7 +39,8 @@ public class BotService : IBotService
         _telegramClient = new TelegramBotClient(botConfig.TelegramToken);
         _ollamaChat = new OllamaSharp.Chat(_ollamaClient, "");
         _telegramClient.StartReceiving(HandleUpdateAsync, HandleErrorAsync, cancellationToken: _cts.Token);
-        _logger.LogInformation($"Bot {_config.Name} started for TelegramToken: {_config.TelegramToken} for Telgram BotId:{_telegramClient.BotId}");
+        _logger.LogInformation(
+            $"Bot {_config.Name} started for TelegramToken: {_config.TelegramToken} for Telgram BotId:{_telegramClient.BotId}");
     }
 
     public Task StopAsync()
@@ -62,26 +63,39 @@ public class BotService : IBotService
             {
                 if (message.Text != null)
                 {
-                    _logger.LogInformation($"Received chat message from: {message.Chat.Id} for {_telegramClient.BotId}: {message.Text}");
+                    _logger.LogInformation(
+                        $"Received chat message from: {message.Chat.Id} for {_telegramClient.BotId}: {message.Text}");
 
                     var text = "";
                     var prompt = new StringBuilder();
 
-                    // Route the message through the input processors
-                    var shouldContinue = await _messageInputRouter.Route(message, prompt, _ollamaChat, _telegramClient, isAdmin);
-
-                    if (shouldContinue)
+                    try
                     {
-                        var p = prompt.ToString();
-                        if (string.IsNullOrWhiteSpace(p)) p = message.Text;
-                        // Send the prompt to Ollama and gather response
-                        await foreach (var answerToken in _ollamaChat.Send(p))
-                        {
-                            text += answerToken;
-                            await _telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-                        }
+                        // Route the message through the input processors
+                        var shouldContinue =
+                            await _messageInputRouter.Route(message, prompt, _ollamaChat, _telegramClient, isAdmin);
 
-                        await _telegramClient.SendTextMessageAsync(message.Chat.Id, text, cancellationToken: cancellationToken);
+                        if (shouldContinue)
+                        {
+                            var p = prompt.ToString();
+                            if (string.IsNullOrWhiteSpace(p)) p = message.Text;
+                            // Send the prompt to Ollama and gather response
+                            await foreach (var answerToken in _ollamaChat.Send(p))
+                            {
+                                text += answerToken;
+                                await _telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+                            }
+
+                            await _telegramClient.SendTextMessageAsync(message.Chat.Id, text, cancellationToken: cancellationToken);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, $"Error processing message {message.MessageId}");
+                        if (isAdmin)
+                        {
+                            await _telegramClient.SendTextMessageAsync(message.Chat.Id, e.ToString(), cancellationToken: cancellationToken);
+                        }
                     }
                 }
                 else
