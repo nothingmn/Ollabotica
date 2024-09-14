@@ -17,8 +17,36 @@ public class Program
     public static async Task Main(string[] args)
     {
         var host = CreateHostBuilder(args).Build();
-        //var botManager = host.Services.GetRequiredService<IBotManager>();
-        //await botManager.StartBotsAsync();
+
+        Console.WriteLine(@"
+   ___  _ _       _           _   _
+  / _ \| | | __ _| |__   ___ | |_(_) ___ __ _
+ | | | | | |/ _` | '_ \ / _ \| __| |/ __/ _` |
+ | |_| | | | (_| | |_) | (_) | |_| | (_| (_| |
+  \___/|_|_|\__,_|_.__/ \___/ \__|_|\___\__,_|
+        ~~ Bringing AI to Telegram! ~~
+        ");
+
+        Console.WriteLine("\n----------------------------------------------\n");
+
+        // Get admin and non-admin triggers
+        var (adminTriggers, nonAdminTriggers) = AttributeScanner.GetAdminAndNonAdminTriggers();
+
+        // Output the admin triggers
+        Console.WriteLine("Admin Triggers:");
+        foreach (var trigger in adminTriggers)
+        {
+            Console.WriteLine($"{trigger.Trigger} - {trigger.Description}");
+        }
+
+        // Output the non-admin triggers
+        Console.WriteLine("\nNon-Admin Triggers:");
+        foreach (var trigger in nonAdminTriggers)
+        {
+            Console.WriteLine($"{trigger.Trigger} - {trigger.Description}");
+        }
+
+        Console.WriteLine("\n\n----------------------------------------------\n\n");
         await host.RunAsync();
     }
 
@@ -74,9 +102,61 @@ public class Program
                 services.AddTransient<IMessageInputProcessor, ConversationManagerInputProcessor>();
                 services.AddTransient<IMessageInputProcessor, StartNewConversationInputProcessor>();
                 services.AddTransient<IMessageInputProcessor, DiagnosticsInputProcessor>();
+                services.AddTransient<IMessageInputProcessor, ModelManagerInputProcessor>();
+
                 //services.AddTransient<IMessageInputProcessor, EchoUserTextInputProcessor>();
                 services.AddTransient<IMessageOutputProcessor, BasicChatOutputProcessor>();
 
                 services.AddHostedService<BotHostedService>();
             });
+}
+
+public static class AttributeScanner
+{
+    public static List<(Type ClassType, TriggerAttribute Trigger)> GetClassesWithTriggerAttribute()
+    {
+        var typesWithTriggerAttribute = new List<(Type, TriggerAttribute)>();
+
+        // Loop through all assemblies in the current AppDomain
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            // Loop through all types in the assembly
+            foreach (var type in assembly.GetTypes())
+            {
+                // Check if the type is a class and has the TriggerAttribute
+                if (type.IsClass)
+                {
+                    var attributes = type.GetCustomAttributes(typeof(TriggerAttribute), inherit: true)
+                                         .Cast<TriggerAttribute>();
+
+                    foreach (var attribute in attributes)
+                    {
+                        typesWithTriggerAttribute.Add((type, attribute));
+                    }
+                }
+            }
+        }
+
+        return typesWithTriggerAttribute;
+    }
+
+    public static Tuple<List<TriggerAttribute>, List<TriggerAttribute>> GetAdminAndNonAdminTriggers()
+    {
+        // Get all TriggerAttributes
+        var allTriggers = GetClassesWithTriggerAttribute()
+            .Select(t => t.Trigger)
+            .ToList();
+
+        // Use LINQ to filter the triggers by IsAdmin == true and IsAdmin == false
+        var adminTriggers = allTriggers
+            .Where(trigger => trigger.IsAdmin)
+            .ToList();
+
+        var nonAdminTriggers = allTriggers
+            .Where(trigger => !trigger.IsAdmin)
+            .ToList();
+
+        // Return a tuple containing both lists
+        return Tuple.Create(adminTriggers, nonAdminTriggers);
+    }
 }

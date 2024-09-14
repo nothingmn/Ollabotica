@@ -12,6 +12,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Ollabotica.InputProcessors;
 
+[Trigger(Trigger = "/start", Description = "Clears the message history and starts a new conversation with the model.", IsAdmin = false)]
 public class StartNewConversationInputProcessor : IMessageInputProcessor
 {
     public async Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, BotConfiguration botConfiguration)

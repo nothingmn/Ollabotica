@@ -19,7 +19,9 @@ This has been tested against the Ollama Open Web UI's API and should work agains
 1. Flexible hosting options, run the local executable or hostable via Docker and docker-compose
 1. All configuration is done via a single file, appsettings.json
 1. Optionally you can mount a volume for the Chat History, via docker settings
-1. 
+1. List models in the chat
+1. Hot swap a model for a bot in a chat
+1. Ask for debug information
 
 ----
 
@@ -61,8 +63,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./appsettings.json:/app/appsettings.json
-    volumes:
-      - ./chats.json:/app/chats
+      - ./chats:/app/chats
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
 
