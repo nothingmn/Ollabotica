@@ -10,7 +10,7 @@ namespace Ollabotica.InputProcessors;
 
 public class PromptFillingInputProcessor : IMessageInputProcessor
 {
-    public Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin)
+    public Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, BotConfiguration botConfiguration)
     {
         // Fill in the prompt information, system instructions, and user context
         prompt.AppendLine("System Instructions:");

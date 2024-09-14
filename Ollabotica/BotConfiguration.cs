@@ -17,6 +17,7 @@ public class BotConfiguration
     public string OllamaToken { get; set; }
     public string DefaultModel { get; set; }
     public string NewChatPrompt { get; set; }
+    public System.IO.DirectoryInfo ChatsFolder { get; set; }
 
     // These will be loaded as strings, then parsed into lists of longs
     public string AllowedChatIdsRaw { get; set; }

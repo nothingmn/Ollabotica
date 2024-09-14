@@ -14,15 +14,25 @@ namespace Ollabotica.InputProcessors;
 
 public class StartNewConversationInputProcessor : IMessageInputProcessor
 {
-    public async Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin)
+    public async Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, BotConfiguration botConfiguration)
     {
         // Logic to start a new conversation by resetting OllamaSharp context
-        if (message.Text.Equals("/new", StringComparison.InvariantCultureIgnoreCase) || message.Text.Equals("/start", StringComparison.InvariantCultureIgnoreCase) || message.Text.Equals("/clear", StringComparison.InvariantCultureIgnoreCase))
+        if (message.Text.Equals("/new", StringComparison.InvariantCultureIgnoreCase) || message.Text.Equals("/newchat", StringComparison.InvariantCultureIgnoreCase) || message.Text.Equals("/start", StringComparison.InvariantCultureIgnoreCase) || message.Text.Equals("/clear", StringComparison.InvariantCultureIgnoreCase))
         {
             // Resetting the conversation
             ollamaChat.SetMessages(new List<OllamaSharp.Models.Chat.Message>());
             await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
             await telegramClient.SendTextMessageAsync(message.Chat.Id, $"Chat was cleared.");
+            if (!string.IsNullOrWhiteSpace(botConfiguration.NewChatPrompt))
+            {
+                await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+                await foreach (var answerToken in ollamaChat.Send(botConfiguration.NewChatPrompt))
+                {
+                    await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+                    await telegramClient.SendTextMessageAsync(message.Chat.Id, answerToken);
+                }
+            }
+
             return false;
         }
 

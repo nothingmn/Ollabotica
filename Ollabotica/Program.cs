@@ -22,9 +22,7 @@ public class Program
         await host.RunAsync();
     }
 
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
-            .ConfigureAppConfiguration((context, config) =>
+    public static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args).ConfigureAppConfiguration((context, config) =>
             {
                 var env = context.HostingEnvironment;
                 var files = Directory.GetFiles(env.ContentRootPath, "appsettings*.*");
@@ -41,9 +39,13 @@ public class Program
             {
                 var botConfigurations = context.Configuration.GetSection("Bots").Get<List<BotConfiguration>>();
 
+                var env = context.HostingEnvironment;
+
                 // Register configurations
                 foreach (var botConfig in botConfigurations)
                 {
+                    botConfig.ChatsFolder = new System.IO.DirectoryInfo(Path.Combine(env.ContentRootPath, "chats", botConfig.Name));
+                    if (!botConfig.ChatsFolder.Exists) Directory.CreateDirectory(botConfig.ChatsFolder.FullName);
                     services.AddSingleton(botConfig);  // Register each BotConfiguration as a singleton
                 }
 
@@ -69,6 +71,7 @@ public class Program
                 services.AddSingleton<MessageInputRouter>();
                 services.AddSingleton<MessageOutputRouter>();
                 //services.AddTransient<IMessageInputProcessor, PromptFillingInputProcessor>();
+                services.AddTransient<IMessageInputProcessor, ConversationManagerInputProcessor>();
                 services.AddTransient<IMessageInputProcessor, StartNewConversationInputProcessor>();
                 services.AddTransient<IMessageInputProcessor, DiagnosticsInputProcessor>();
                 //services.AddTransient<IMessageInputProcessor, EchoUserTextInputProcessor>();

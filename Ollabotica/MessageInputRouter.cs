@@ -23,13 +23,13 @@ public class MessageInputRouter
     }
 
     // Routes a message to all processors
-    public async Task<bool> Route(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin)
+    public async Task<bool> Route(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, BotConfiguration botConfiguration)
     {
         foreach (var processor in _processors)
         {
             try
             {
-                if (await processor.Handle(message, prompt, ollamaChat, telegramClient, isAdmin) == false) return false;
+                if (await processor.Handle(message, prompt, ollamaChat, telegramClient, isAdmin, botConfiguration) == false) return false;
             }
             catch (Exception ex)
             {
@@ -53,13 +53,13 @@ public class MessageOutputRouter
     }
 
     // Routes a message to all processors
-    public async Task<bool> Route(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, string ollamaOutputText)
+    public async Task<bool> Route(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, string ollamaOutputText, BotConfiguration botConfiguration)
     {
         foreach (var processor in _processors)
         {
             try
             {
-                if (await processor.Handle(message, prompt, ollamaChat, telegramClient, isAdmin, ollamaOutputText) == false) return false;
+                if (await processor.Handle(message, prompt, ollamaChat, telegramClient, isAdmin, ollamaOutputText, botConfiguration) == false) return false;
             }
             catch (Exception ex)
             {

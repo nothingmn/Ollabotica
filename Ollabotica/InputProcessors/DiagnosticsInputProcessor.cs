@@ -8,13 +8,12 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Ollabotica.InputProcessors;
 
 public class DiagnosticsInputProcessor : IMessageInputProcessor
 {
-    public async Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin)
+    public async Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, BotConfiguration botConfiguration)
     {
         if (!isAdmin) return true;
 
@@ -42,6 +41,17 @@ public class DiagnosticsInputProcessor : IMessageInputProcessor
                 $"    Messages HashCode: {ollamaChat.Messages.GetHashCode()}\n" +
                 $"    Messages Count: {ollamaChat.Messages.Count}\n" +
                 $"    Options: {System.Text.Json.JsonSerializer.Serialize(ollamaChat.Options)}\n" +
+                "\nConfig:\n" +
+                $"    HashCode: {botConfiguration.GetHashCode()}\n" +
+                $"    Name: {botConfiguration.Name}\n" +
+                $"    Chat Folder: {botConfiguration.ChatsFolder.FullName}\n" +
+                $"    Telegram Token: {botConfiguration.TelegramToken}\n" +
+                $"    Allowed ChatIds: {botConfiguration.AllowedChatIdsRaw}\n" +
+                $"    Admin ChatIds: {botConfiguration.AdminChatIdsRaw}\n" +
+                $"    Default Model: {botConfiguration.DefaultModel}\n" +
+                $"    Ollama Url: {botConfiguration.OllamaUrl}\n" +
+                $"    Ollama Token: {botConfiguration.OllamaToken}\n" +
+                $"    New Chat Prompt: {botConfiguration.NewChatPrompt}\n" +
                 ""
                 );
             return false;

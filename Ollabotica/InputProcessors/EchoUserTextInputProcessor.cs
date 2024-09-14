@@ -22,7 +22,7 @@ public class EchoUserTextInputProcessor : IMessageInputProcessor
         _log = log;
     }
 
-    public async Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin)
+    public async Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, BotConfiguration botConfiguration)
     {
         _log.LogInformation("Received message:{messageText}", message.Text);
 

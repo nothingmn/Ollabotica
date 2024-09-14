@@ -68,14 +68,12 @@ public class BotService : IBotService
                     _logger.LogInformation(
                         $"Received chat message from: {message.Chat.Id} for {_telegramClient.BotId}: {message.Text}");
 
-                    var text = "";
                     var prompt = new StringBuilder();
 
                     try
                     {
                         // Route the message through the input processors
-                        var shouldContinue =
-                            await _messageInputRouter.Route(message, prompt, _ollamaChat, _telegramClient, isAdmin);
+                        var shouldContinue = await _messageInputRouter.Route(message, prompt, _ollamaChat, _telegramClient, isAdmin, _config);
 
                         if (shouldContinue)
                         {
@@ -84,11 +82,10 @@ public class BotService : IBotService
                             // Send the prompt to Ollama and gather response
                             await foreach (var answerToken in _ollamaChat.Send(p))
                             {
-                                text += answerToken;
                                 await _telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+                                await _messageOutputRouter.Route(message, prompt, _ollamaChat, _telegramClient, isAdmin, answerToken, _config);
                             }
-
-                            await _messageOutputRouter.Route(message, prompt, _ollamaChat, _telegramClient, isAdmin, text);
+                            await _messageOutputRouter.Route(message, prompt, _ollamaChat, _telegramClient, isAdmin, "\n", _config);
                         }
                     }
                     catch (Exception e)

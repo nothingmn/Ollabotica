@@ -22,12 +22,24 @@ public class BasicChatOutputProcessor : IMessageOutputProcessor
         _log = log;
     }
 
-    public async Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, string ollamaOutputText)
-    {
-        _log.LogInformation("Received message:{messageText}, ollama responded with:", message.Text, ollamaOutputText);
+    private string text = "";
 
-        await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-        await telegramClient.SendTextMessageAsync(message.Chat.Id, ollamaOutputText);
+    public async Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, string ollamaOutputText, BotConfiguration botConfiguration)
+    {
+        _log.LogInformation("Received message:{messageText}, ollama responded with: {ollamaOutputText}", message.Text, ollamaOutputText);
+
+        text += ollamaOutputText;
+        if (text.Contains("\n"))
+        {
+            foreach (var line in text.Split("\n"))
+            {
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+                await telegramClient.SendTextMessageAsync(message.Chat.Id, line);
+            }
+            text = "";
+        }
+
         return false;
     }
 }
