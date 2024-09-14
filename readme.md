@@ -4,8 +4,7 @@ Ollabotica - Yet another telegram bot for Ollama
 
 Notes:
 ----
-This has been tested against the Ollama Web UI's API
-
+This has been tested against the Ollama Open Web UI's API and should work against work just against their typical API without Open Web UI.
 
 Running with Docker (preferred)
 ----
