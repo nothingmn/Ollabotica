@@ -14,10 +14,10 @@ using File = System.IO.File;
 
 namespace Ollabotica.InputProcessors;
 
-[Trigger(Trigger = "/listchats", Description = "List all saved chats.")]
-[Trigger(Trigger = "/deletechat", Description = "Delete a saved chat. /deletechat <name>")]
-[Trigger(Trigger = "/savechat", Description = "Save the current chat. /savechat <name>")]
-[Trigger(Trigger = "/loadchat", Description = "Load a chat based on its name.  /loadchat <name>")]
+[Trigger(Trigger = "listchats", Description = "List all saved chats.")]
+[Trigger(Trigger = "deletechat", Description = "Delete a saved chat. /deletechat <name>")]
+[Trigger(Trigger = "savechat", Description = "Save the current chat. /savechat <name>")]
+[Trigger(Trigger = "loadchat", Description = "Load a chat based on its name.  /loadchat <name>")]
 public class ConversationManagerInputProcessor : IMessageInputProcessor
 {
     private readonly ILogger<ConversationManagerInputProcessor> _log;

@@ -14,8 +14,8 @@ using File = System.IO.File;
 
 namespace Ollabotica.InputProcessors;
 
-[Trigger(Trigger = "/listmodels", Description = "List all available models.")]
-[Trigger(Trigger = "/usemodel", Description = "Change the current chat to use a different model. /usemodel <name>")]
+[Trigger(Trigger = "listmodels", Description = "List all available models.")]
+[Trigger(Trigger = "usemodel", Description = "Change the current chat to use a different model. /usemodel <name>")]
 public class ModelManagerInputProcessor : IMessageInputProcessor
 {
     private readonly ILogger<ModelManagerInputProcessor> _log;

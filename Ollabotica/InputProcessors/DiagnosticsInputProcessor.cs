@@ -11,7 +11,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace Ollabotica.InputProcessors;
 
-[Trigger(Trigger = "/debug", Description = "Dump diagnostic information.", IsAdmin = true)]
+[Trigger(Trigger = "debug", Description = "Dump diagnostic information.", IsAdmin = true)]
 public class DiagnosticsInputProcessor : IMessageInputProcessor
 {
     public async Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, BotConfiguration botConfiguration)
