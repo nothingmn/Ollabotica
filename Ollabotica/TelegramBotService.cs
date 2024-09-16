@@ -13,19 +13,19 @@ namespace Ollabotica;
 /// <summary>
 /// This class will handle a single bot's Telegram and Ollama connections.
 /// </summary>
-public class BotService : IBotService
+public class TelegramBotService : IBotService
 {
     private BotConfiguration _config;
     private TelegramBotClient _telegramClient;
     private OllamaApiClient _ollamaClient;
-    private readonly ILogger<BotService> _logger;
+    private readonly ILogger<TelegramBotService> _logger;
     private readonly MessageInputRouter _messageInputRouter;
     private readonly MessageOutputRouter _messageOutputRouter;
     private OllamaSharp.Chat _ollamaChat;
     private CancellationTokenSource _cts;
 
     // Inject all required dependencies via constructor
-    public BotService(ILogger<BotService> logger, MessageInputRouter messageInputRouter, MessageOutputRouter messageOutputRouter)
+    public TelegramBotService(ILogger<TelegramBotService> logger, MessageInputRouter messageInputRouter, MessageOutputRouter messageOutputRouter)
     {
         _logger = logger;
         _messageInputRouter = messageInputRouter;

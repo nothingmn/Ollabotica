@@ -79,8 +79,8 @@ public class Program
 
                 services.AddSingleton<IEnumerable<BotConfiguration>>(botConfigurations);
                 services.AddSingleton<IBotManager, BotManager>();
-                // Register BotService as transient to create a new instance for each BotConfiguration
-                services.AddTransient<IBotService, BotService>();
+                // Register TelegramBotService as transient to create a new instance for each BotConfiguration
+                services.AddKeyedTransient<IBotService, TelegramBotService>(ServiceTypes.Telegram.ToString());
 
                 // Register factories for TelegramBotClient and OllamaClient based on each BotConfiguration
                 services.AddTransient(provider =>

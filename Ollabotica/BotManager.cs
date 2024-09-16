@@ -24,8 +24,8 @@ public class BotManager : IBotManager
     {
         foreach (var botConfig in _botConfigurations)
         {
-            // Resolve BotService from IServiceProvider
-            var botService = _serviceProvider.GetRequiredService<IBotService>();
+            // Resolve TelegramBotService from IServiceProvider
+            var botService = _serviceProvider.GetRequiredKeyedService<IBotService>(ServiceTypes.Telegram.ToString());
             await botService.StartAsync(botConfig);
             _botServices.Add(botService);
         }

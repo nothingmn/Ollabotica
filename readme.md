@@ -46,7 +46,7 @@ Edit the file to include your bot token and other settings.
 Run the following command:
 
 ```
-docker run -d -v ./appsettings.json:/app/appsettings.dev.json --restart unless-stopped robchartier/Ollabotica 
+docker run -d -v ./appsettings.json:/app/appsettings.dev.json --restart unless-stopped robchartier/ollabotica 
 ```
 
 All settings have been documented in the (appsettings.sample.json.txt) file.

@@ -6,12 +6,19 @@ using System.Threading.Tasks;
 
 namespace Ollabotica;
 
+public enum ServiceTypes
+{
+    Telegram,
+    Slack
+}
+
 /// <summary>
 /// This class will hold the configuration properties for each bot.
 /// </summary>
 public class BotConfiguration
 {
     public string Name { get; set; }
+    public ServiceTypes ServiceType { get; set; } = ServiceTypes.Telegram;
     public string TelegramToken { get; set; }
     public string OllamaUrl { get; set; }
     public string OllamaToken { get; set; }
