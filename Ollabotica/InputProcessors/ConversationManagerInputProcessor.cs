@@ -27,7 +27,7 @@ public class ConversationManagerInputProcessor : IMessageInputProcessor
         _log = log;
     }
 
-    public async Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, BotConfiguration botConfiguration)
+    public async Task<bool> Handle(Message message, OllamaSharp.Chat ollamaChat, IChatService chat, bool isAdmin, BotConfiguration botConfiguration)
     {
         // Logic to start a new conversation by resetting OllamaSharp context
         if (message.Text.StartsWith("/listchats", StringComparison.InvariantCultureIgnoreCase))
@@ -42,9 +42,9 @@ public class ConversationManagerInputProcessor : IMessageInputProcessor
             {
                 chats = "No chats found.\nUse:\n\n/savechat <name>\n\nto save your chats with the bot.";
             }
-            await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+            await chat.SendChatActionAsync(message.Chat.Id, ChatAction.Typing.ToString());
 
-            await telegramClient.SendTextMessageAsync(message.Chat.Id, $"Chats available to you include:\n{chats}");
+            await chat.SendTextMessageAsync(message.Chat.Id, $"Chats available to you include:\n{chats}");
             return false;
         }
 
@@ -53,8 +53,8 @@ public class ConversationManagerInputProcessor : IMessageInputProcessor
             var name = message.Text.Substring("/deletechat".Length).Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
-                await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-                await telegramClient.SendTextMessageAsync(message.Chat.Id, $"Please provide a name for the chat.");
+                await chat.SendChatActionAsync(message.Chat.Id, ChatAction.Typing.ToString());
+                await chat.SendTextMessageAsync(message.Chat.Id, $"Please provide a name for the chat.");
                 _log.LogInformation("Trying to delete the chat, no name provided for the chat.");
                 return false;
             }
@@ -63,16 +63,16 @@ public class ConversationManagerInputProcessor : IMessageInputProcessor
             var chatFile = System.IO.Path.Combine(chatFolder, $"{name}.json");
             _log.LogInformation($"Chat file will be deleted:{chatFile}");
 
-            await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+            await chat.SendChatActionAsync(message.Chat.Id, ChatAction.Typing.ToString());
             if (System.IO.File.Exists(chatFile))
             {
                 System.IO.File.Delete(chatFile);
-                await telegramClient.SendTextMessageAsync(message.Chat.Id, $"Chat was deleted.");
+                await chat.SendTextMessageAsync(message.Chat.Id, $"Chat was deleted.");
             }
             else
             {
-                await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-                await telegramClient.SendTextMessageAsync(message.Chat.Id, $"Chat was not found.");
+                await chat.SendChatActionAsync(message.Chat.Id, ChatAction.Typing.ToString());
+                await chat.SendTextMessageAsync(message.Chat.Id, $"Chat was not found.");
             }
 
             return false;
@@ -83,8 +83,8 @@ public class ConversationManagerInputProcessor : IMessageInputProcessor
             var name = message.Text.Substring("/savechat".Length).Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
-                await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-                await telegramClient.SendTextMessageAsync(message.Chat.Id, $"Please provide a name for the chat.");
+                await chat.SendChatActionAsync(message.Chat.Id, ChatAction.Typing.ToString());
+                await chat.SendTextMessageAsync(message.Chat.Id, $"Please provide a name for the chat.");
                 _log.LogInformation("Trying to save the chat, no name provided for the chat.");
                 return false;
             }
@@ -96,8 +96,8 @@ public class ConversationManagerInputProcessor : IMessageInputProcessor
             System.IO.File.WriteAllText(chatFile, chats);
 
             // Resetting the conversation
-            await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-            await telegramClient.SendTextMessageAsync(message.Chat.Id, $"Chat was saved.");
+            await chat.SendChatActionAsync(message.Chat.Id, ChatAction.Typing.ToString());
+            await chat.SendTextMessageAsync(message.Chat.Id, $"Chat was saved.");
             return false;
         }
 
@@ -106,8 +106,8 @@ public class ConversationManagerInputProcessor : IMessageInputProcessor
             var name = message.Text.Substring("/loadchat".Length).Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
-                await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-                await telegramClient.SendTextMessageAsync(message.Chat.Id, $"Please provide a name for the chat.");
+                await chat.SendChatActionAsync(message.Chat.Id, ChatAction.Typing.ToString());
+                await chat.SendTextMessageAsync(message.Chat.Id, $"Please provide a name for the chat.");
                 _log.LogInformation("Trying to load the chat, no name provided for the chat.");
                 return false;
             }
@@ -119,8 +119,8 @@ public class ConversationManagerInputProcessor : IMessageInputProcessor
             if (!File.Exists(chatFile))
             {
                 _log.LogInformation($"Chat file not found:{chatFile}");
-                await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-                await telegramClient.SendTextMessageAsync(message.Chat.Id, $"Chat was not found, try /listchats");
+                await chat.SendChatActionAsync(message.Chat.Id, ChatAction.Typing.ToString());
+                await chat.SendTextMessageAsync(message.Chat.Id, $"Chat was not found, try /listchats");
                 return false;
             }
 
@@ -131,8 +131,8 @@ public class ConversationManagerInputProcessor : IMessageInputProcessor
             ollamaChat.SetMessages(chats);
 
             // Resetting the conversation
-            await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-            await telegramClient.SendTextMessageAsync(message.Chat.Id, $"Chat was loaded ({chats.Count}).");
+            await chat.SendChatActionAsync(message.Chat.Id, ChatAction.Typing.ToString());
+            await chat.SendTextMessageAsync(message.Chat.Id, $"Chat was loaded ({chats.Count}).");
             return false;
         }
         return true;

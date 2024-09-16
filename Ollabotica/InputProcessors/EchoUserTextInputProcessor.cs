@@ -22,12 +22,12 @@ public class EchoUserTextInputProcessor : IMessageInputProcessor
         _log = log;
     }
 
-    public async Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, BotConfiguration botConfiguration)
+    public async Task<bool> Handle(Message message, OllamaSharp.Chat ollamaChat, IChatService chat, bool isAdmin, BotConfiguration botConfiguration)
     {
         _log.LogInformation("Received message:{messageText}", message.Text);
 
-        await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-        await telegramClient.SendTextMessageAsync(message.Chat.Id, $"You said:\n\"{message.Text}\"");
+        await chat.SendChatActionAsync(message.Chat.Id, ChatAction.Typing.ToString());
+        await chat.SendTextMessageAsync(message.Chat.Id, $"You said:\n\"{message.Text}\"");
         return false;
     }
 }

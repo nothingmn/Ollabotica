@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Ollabotica.ChatServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,13 +24,13 @@ public class MessageInputRouter
     }
 
     // Routes a message to all processors
-    public async Task<bool> Route(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, BotConfiguration botConfiguration)
+    public async Task<bool> Route(Message message, OllamaSharp.Chat ollamaChat, IChatService chat, bool isAdmin, BotConfiguration botConfiguration)
     {
         foreach (var processor in _processors)
         {
             try
             {
-                if (await processor.Handle(message, prompt, ollamaChat, telegramClient, isAdmin, botConfiguration) == false) return false;
+                if (await processor.Handle(message, ollamaChat, chat, isAdmin, botConfiguration) == false) return false;
             }
             catch (Exception ex)
             {
@@ -53,13 +54,13 @@ public class MessageOutputRouter
     }
 
     // Routes a message to all processors
-    public async Task<bool> Route(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, string ollamaOutputText, BotConfiguration botConfiguration)
+    public async Task<bool> Route(Message message, OllamaSharp.Chat ollamaChat, IChatService chat, bool isAdmin, string ollamaOutputText, BotConfiguration botConfiguration)
     {
         foreach (var processor in _processors)
         {
             try
             {
-                if (await processor.Handle(message, prompt, ollamaChat, telegramClient, isAdmin, ollamaOutputText, botConfiguration) == false) return false;
+                if (await processor.Handle(message, ollamaChat, chat, isAdmin, ollamaOutputText, botConfiguration) == false) return false;
             }
             catch (Exception ex)
             {

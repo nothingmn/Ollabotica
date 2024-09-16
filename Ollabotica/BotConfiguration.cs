@@ -19,7 +19,7 @@ public class BotConfiguration
 {
     public string Name { get; set; }
     public ServiceTypes ServiceType { get; set; } = ServiceTypes.Telegram;
-    public string TelegramToken { get; set; }
+    public string ChatAuthToken { get; set; }
     public string OllamaUrl { get; set; }
     public string OllamaToken { get; set; }
     public string DefaultModel { get; set; }

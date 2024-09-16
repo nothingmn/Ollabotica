@@ -24,7 +24,7 @@ public class BasicChatOutputProcessor : IMessageOutputProcessor
 
     private string text = "";
 
-    public async Task<bool> Handle(Message message, StringBuilder prompt, OllamaSharp.Chat ollamaChat, TelegramBotClient telegramClient, bool isAdmin, string ollamaOutputText, BotConfiguration botConfiguration)
+    public async Task<bool> Handle(Message message, OllamaSharp.Chat ollamaChat, IChatService chat, bool isAdmin, string ollamaOutputText, BotConfiguration botConfiguration)
     {
         _log.LogInformation("Received message:{messageText}, ollama responded with: {ollamaOutputText}", message.Text, ollamaOutputText);
 
@@ -34,8 +34,8 @@ public class BasicChatOutputProcessor : IMessageOutputProcessor
             foreach (var line in text.Split("\n"))
             {
                 if (string.IsNullOrWhiteSpace(line)) continue;
-                await telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-                await telegramClient.SendTextMessageAsync(message.Chat.Id, line);
+                await chat.SendChatActionAsync(message.Chat.Id, ChatAction.Typing.ToString());
+                await chat.SendTextMessageAsync(message.Chat.Id, line);
             }
             text = "";
         }

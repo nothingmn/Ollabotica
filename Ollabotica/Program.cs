@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Ollabotica.InputProcessors;
 using OllamaSharp;
 using System.Net.Http.Headers;
+using Ollabotica.ChatServices;
 using Telegram.Bot;
 
 namespace Ollabotica;
@@ -86,7 +87,7 @@ public class Program
                 services.AddTransient(provider =>
                 {
                     var botConfig = provider.GetRequiredService<BotConfiguration>();
-                    return new TelegramBotClient(botConfig.TelegramToken);
+                    return new TelegramBotClient(botConfig.ChatAuthToken);
                 });
 
                 // Register logging
@@ -106,6 +107,8 @@ public class Program
 
                 //services.AddTransient<IMessageInputProcessor, EchoUserTextInputProcessor>();
                 services.AddTransient<IMessageOutputProcessor, BasicChatOutputProcessor>();
+
+                services.AddKeyedTransient<IChatService, TelegramChatService>("Telegram");
 
                 services.AddHostedService<BotHostedService>();
             });
