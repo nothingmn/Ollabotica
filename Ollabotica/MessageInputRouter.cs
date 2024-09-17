@@ -24,7 +24,7 @@ public class MessageInputRouter
     }
 
     // Routes a message to all processors
-    public async Task<bool> Route(Message message, OllamaSharp.Chat ollamaChat, IChatService chat, bool isAdmin, BotConfiguration botConfiguration)
+    public async Task<bool> Route(ChatMessage message, OllamaSharp.Chat ollamaChat, IChatService chat, bool isAdmin, BotConfiguration botConfiguration)
     {
         foreach (var processor in _processors)
         {
@@ -34,7 +34,7 @@ public class MessageInputRouter
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error processing message {message.MessageId} with {processor.GetType().Name}");
+                _logger.LogError(ex, $"Error processing message {message} with {processor.GetType().Name}");
             }
         }
         return true;
@@ -54,7 +54,7 @@ public class MessageOutputRouter
     }
 
     // Routes a message to all processors
-    public async Task<bool> Route(Message message, OllamaSharp.Chat ollamaChat, IChatService chat, bool isAdmin, string ollamaOutputText, BotConfiguration botConfiguration)
+    public async Task<bool> Route(ChatMessage message, OllamaSharp.Chat ollamaChat, IChatService chat, bool isAdmin, string ollamaOutputText, BotConfiguration botConfiguration)
     {
         foreach (var processor in _processors)
         {

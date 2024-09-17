@@ -14,24 +14,19 @@ namespace Ollabotica.InputProcessors;
 [Trigger(Trigger = "debug", Description = "Dump diagnostic information.", IsAdmin = true)]
 public class DiagnosticsInputProcessor : IMessageInputProcessor
 {
-    public async Task<bool> Handle(Message message, OllamaSharp.Chat ollamaChat, IChatService chat, bool isAdmin, BotConfiguration botConfiguration)
+    public async Task<bool> Handle(ChatMessage message, OllamaSharp.Chat ollamaChat, IChatService chat, bool isAdmin, BotConfiguration botConfiguration)
     {
         if (!isAdmin) return true;
 
         // Logic to start a new conversation by resetting OllamaSharp context
-        if (message.Text.Equals("/debug", StringComparison.InvariantCultureIgnoreCase))
+        if (message.IncomingText.Equals("/debug", StringComparison.InvariantCultureIgnoreCase))
         {
-            await chat.SendChatActionAsync(message.Chat.Id, ChatAction.Typing.ToString());
-            await chat.SendTextMessageAsync(message.Chat.Id,
+            await chat.SendChatActionAsync(message, ChatAction.Typing.ToString());
+            await chat.SendTextMessageAsync(message,
                 $"Diagnostics:\n\nTelegram:\n" +
-                $"    ChatId: {message.Chat.Id}\n" +
-                $"    Chat FirstName: {message.Chat.FirstName}\n" +
-                $"    Chat LastName: {message.Chat.LastName}\n" +
-                $"    Chat Title: {message.Chat.Title}\n" +
-                $"    Chat Username: {message.Chat.Username}\n" +
-                $"    Chat IsForum: {message.Chat.IsForum}\n" +
-                $"    Chat Type: {message.Chat.Type}\n" +
-                $"    Chat HashCode: {message.Chat.GetHashCode()}\n" +
+                $"    ChatId: {message.UserIdentity}\n" +
+                $"    Chat UserIdentity: {message.UserIdentity}\n" +
+                $"    Chat HashCode: {message.GetHashCode()}\n" +
                 $"    BotId: {chat.BotId}\n" +
                 $"    Chat HashCode: {chat.GetHashCode()}\n" +
                 "\nOllama:\n" +

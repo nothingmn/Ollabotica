@@ -7,6 +7,7 @@ using OllamaSharp;
 using System.Net.Http.Headers;
 using Ollabotica.ChatServices;
 using Telegram.Bot;
+using Ollabotica.BotServices;
 
 namespace Ollabotica;
 
@@ -81,7 +82,8 @@ public class Program
                 services.AddSingleton<IEnumerable<BotConfiguration>>(botConfigurations);
                 services.AddSingleton<IBotManager, BotManager>();
                 // Register TelegramBotService as transient to create a new instance for each BotConfiguration
-                services.AddKeyedTransient<IBotService, TelegramBotService>(ServiceTypes.Telegram.ToString());
+                services.AddKeyedTransient<IBotService, TelegramBotService>(ServiceTypes.Telegram);
+                services.AddKeyedTransient<IBotService, SlackBotService>(ServiceTypes.Slack);
 
                 // Register factories for TelegramBotClient and OllamaClient based on each BotConfiguration
                 services.AddTransient(provider =>
@@ -108,7 +110,8 @@ public class Program
                 //services.AddTransient<IMessageInputProcessor, EchoUserTextInputProcessor>();
                 services.AddTransient<IMessageOutputProcessor, BasicChatOutputProcessor>();
 
-                services.AddKeyedTransient<IChatService, TelegramChatService>("Telegram");
+                services.AddTransient<SlackChatService, SlackChatService>();
+                services.AddTransient<TelegramChatService, TelegramChatService>();
 
                 services.AddHostedService<BotHostedService>();
             });

@@ -31,7 +31,7 @@ public class BotConfiguration
 
     public string AdminChatIdsRaw { get; set; }
 
-    public List<long> AllowedChatIds
+    public List<long> AllowedChatIdsAsLong
     {
         get
         {
@@ -41,13 +41,33 @@ public class BotConfiguration
         }
     }
 
-    public List<long> AdminChatIds
+    public List<long> AdminChatIdsAsLong
     {
         get
         {
             return AdminChatIdsRaw?.Split(',')
                 .Select(id => long.Parse(id.Trim()))
                 .ToList() ?? new List<long>();
+        }
+    }
+
+    public List<string> AllowedChatIds
+    {
+        get
+        {
+            return AllowedChatIdsRaw?.Split(',')
+                .Select(id => id.Trim())
+                .ToList() ?? new List<string>();
+        }
+    }
+
+    public List<string> AdminChatIds
+    {
+        get
+        {
+            return AdminChatIdsRaw?.Split(',')
+                .Select(id => id.Trim())
+                .ToList() ?? new List<string>();
         }
     }
 }

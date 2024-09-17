@@ -10,7 +10,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace Ollabotica;
+namespace Ollabotica.BotServices;
 
 /// <summary>
 /// This class will handle a single bot's Telegram and Ollama connections.
@@ -65,11 +65,11 @@ public class TelegramBotService : IBotService
         if (update.Type == UpdateType.Message && update.Message != null)
         {
             var message = update.Message;
-            await _telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+            await _telegramClient.SendChatActionAsync(message.Chat.Id.ToString(), ChatAction.Typing);
 
-            bool isAdmin = _config.AdminChatIds.Contains(message.Chat.Id);
+            bool isAdmin = _config.AdminChatIdsAsLong.Contains(message.Chat.Id);
 
-            if (_config.AllowedChatIds.Contains(message.Chat.Id))
+            if (_config.AllowedChatIdsAsLong.Contains(message.Chat.Id))
             {
                 if (message.Text != null)
                 {
@@ -78,8 +78,15 @@ public class TelegramBotService : IBotService
 
                     try
                     {
+                        var m = new ChatMessage()
+                        {
+                            MessageId = message.Chat.Id.ToString(),
+                            IncomingText = message.Text,
+                            ChatId = message.Chat.Id.ToString(),
+                            UserIdentity = $"{message.Chat.FirstName} {message.Chat.LastName}"
+                        };
                         // Route the message through the input processors
-                        var shouldContinue = await _messageInputRouter.Route(message, _ollamaChat, _telegramChatService, isAdmin, _config);
+                        var shouldContinue = await _messageInputRouter.Route(m, _ollamaChat, _telegramChatService, isAdmin, _config);
 
                         if (shouldContinue)
                         {
@@ -88,10 +95,10 @@ public class TelegramBotService : IBotService
                             // Send the prompt to Ollama and gather response
                             await foreach (var answerToken in _ollamaChat.Send(p))
                             {
-                                await _telegramClient.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-                                await _messageOutputRouter.Route(message, _ollamaChat, _telegramChatService, isAdmin, answerToken, _config);
+                                await _telegramClient.SendChatActionAsync(message.Chat.Id.ToString(), ChatAction.Typing);
+                                await _messageOutputRouter.Route(m, _ollamaChat, _telegramChatService, isAdmin, answerToken, _config);
                             }
-                            await _messageOutputRouter.Route(message, _ollamaChat, _telegramChatService, isAdmin, "\n", _config);
+                            await _messageOutputRouter.Route(m, _ollamaChat, _telegramChatService, isAdmin, "\n", _config);
                         }
                     }
                     catch (Exception e)
@@ -99,13 +106,13 @@ public class TelegramBotService : IBotService
                         _logger.LogError(e, $"Error processing message {message.MessageId}");
                         if (isAdmin)
                         {
-                            await _telegramClient.SendTextMessageAsync(message.Chat.Id, e.ToString(), cancellationToken: cancellationToken);
+                            await _telegramClient.SendTextMessageAsync(message.Chat.Id.ToString(), e.ToString(), cancellationToken: cancellationToken);
                         }
                     }
                 }
                 else
                 {
-                    await _telegramClient.SendTextMessageAsync(message.Chat.Id, "I can only process text messages.", cancellationToken: cancellationToken);
+                    await _telegramClient.SendTextMessageAsync(message.Chat.Id.ToString(), "I can only process text messages.", cancellationToken: cancellationToken);
                 }
             }
             else

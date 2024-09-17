@@ -9,11 +9,13 @@ namespace Ollabotica;
 
 public interface IChatService
 {
-    Task SendChatActionAsync(long chatId, string action);
+    Task SendChatActionAsync(ChatMessage message, string action);
 
-    Task SendTextMessageAsync(long chatId, string text);
+    Task SendTextMessageAsync(ChatMessage message);
+
+    Task SendTextMessageAsync(ChatMessage message, string text);
 
     void Init<T>(T chatClient) where T : class;
 
-    long BotId { get; }
+    string BotId { get; }
 }

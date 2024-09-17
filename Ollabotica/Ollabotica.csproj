@@ -16,6 +16,8 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="OllamaSharp" Version="3.0.7" />
+    <PackageReference Include="Slack.NetStandard" Version="9.5.0" />
+    <PackageReference Include="Slack.NetStandard.AsyncEnumerable" Version="1.3.0" />
     <PackageReference Include="SlackAPI" Version="1.1.14" />
     <PackageReference Include="System.Net.Http.Json" Version="8.0.0" />
     <PackageReference Include="Telegram.Bot" Version="21.11.0" />
