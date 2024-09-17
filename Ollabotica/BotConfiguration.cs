@@ -9,7 +9,8 @@ namespace Ollabotica;
 public enum ServiceTypes
 {
     Telegram,
-    Slack
+    Slack,
+    Discord
 }
 
 /// <summary>

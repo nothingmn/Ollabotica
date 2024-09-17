@@ -13,4 +13,6 @@ public class ChatMessage
     public string UserIdentity { get; set; }
     public string MessageId { get; set; }
     public string ChatId { get; set; }
+
+    public object Channel { get; set; }
 }

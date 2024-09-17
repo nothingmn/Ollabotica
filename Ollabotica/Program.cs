@@ -84,6 +84,7 @@ public class Program
                 // Register TelegramBotService as transient to create a new instance for each BotConfiguration
                 services.AddKeyedTransient<IBotService, TelegramBotService>(ServiceTypes.Telegram);
                 services.AddKeyedTransient<IBotService, SlackBotService>(ServiceTypes.Slack);
+                services.AddKeyedTransient<IBotService, DiscordBotService>(ServiceTypes.Discord);
 
                 // Register factories for TelegramBotClient and OllamaClient based on each BotConfiguration
                 services.AddTransient(provider =>
@@ -112,6 +113,7 @@ public class Program
 
                 services.AddTransient<SlackChatService, SlackChatService>();
                 services.AddTransient<TelegramChatService, TelegramChatService>();
+                services.AddTransient<DiscordChatService, DiscordChatService>();
 
                 services.AddHostedService<BotHostedService>();
             });
