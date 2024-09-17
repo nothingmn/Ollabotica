@@ -23,7 +23,7 @@ This has been tested against the Ollama Open Web UI's API and should work agains
 1. Hot swap a model for a bot in a chat
 1. Ask for debug information
 1. Support for Slack - needs deeper testing from the community (Slack is not my thing)
-1. 
+1. Support for Discord - DMs or in channels with mentions.  
 
 ----
 
