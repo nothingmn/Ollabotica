@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Slack.NetStandard.AsyncEnumerable;
 using Slack.NetStandard.Messages.Blocks;
 using Slack.NetStandard.Socket;
+using Slack.NetStandard.WebApi.Chat;
 using SlackAPI.WebSocketMessages;
 using Telegram.Bot;
 
@@ -65,12 +66,16 @@ public class SlackChatService : IChatService
         _log.LogInformation("Message Sent: {msg}", msg);
         try
         {
-            await client.Send(msg);
+            await client.Acknowledge(msg);
+            await client.WebClient.Chat.Post(new PostMessageRequest()
+            {
+                Channel = message.ChatId,
+                Text = message.OutgoingText
+            });
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
         }
-        
     }
 }

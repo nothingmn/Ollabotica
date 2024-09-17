@@ -11,12 +11,13 @@
     },
     {
       "Name": "Lilly",
-      "TelegramToken": "7242289963:AAEisdfgsdfgsdfgsdfgELr_wFLTgBVLO2ho4",
+      "ServiceType": "Slack",
+      "ChatAuthToken": "xapp-.........",
       "OllamaUrl": "http://192.168.194.41:3000/ollama/api",
-      "OllamaToken": "eyJhbGciOisdfhgsdfghsdfghsdfghsdgLTgwYTEtNDllNS05ODMxLWUzNDQ5YmU3YWFmNCJ9.s4hqSnlWGQX46HI3zeW46ZJLUDhhiOJEhPLwPn5MrRs",
-      "DefaultModel": "lilly",
-      "AllowedChatIdsRaw": "544445909,107787674540",
-      "AdminChatIdsRaw": "544445909"
+      "OllamaToken": "eyJhbGciasdfyhdfygjhgfyhsI6IkpXVCJ9.eyJpZCI6IjRmZjIyOTA2LTgwYTEtNDllNS05ODMxLWUzNDQ5YmU3YWFmNCJ9.s4hqSnlWGQX46HI3zeW46ZJLUDhhiOJEhPLwPn5MrRs",
+      "DefaultModel": "dev-bot",
+      "AllowedChatIdsRaw": "U7....",
+      "AdminChatIdsRaw": "U7...."
     }
   ]
 }

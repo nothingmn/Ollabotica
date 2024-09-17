@@ -6,11 +6,13 @@ using System.Threading;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Ollabotica.ChatServices;
 using OllamaSharp;
 using Slack.NetStandard.AsyncEnumerable;
 using Slack.NetStandard.Interaction;
+using Slack.NetStandard.Messages.Blocks;
 using Slack.NetStandard.Messages.Elements.RichText;
 using Slack.NetStandard.Socket;
 using SlackAPI;
@@ -54,6 +56,7 @@ public class SlackBotService : IBotService
 
         _clientWebSocket = new ClientWebSocket();
         var _slackClient = new SocketModeClient();
+
         await _slackClient.ConnectAsync(botConfig.ChatAuthToken);
         _slackChatService.Init(_slackClient);
 
