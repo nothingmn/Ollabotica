@@ -9,6 +9,7 @@ using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Ollabotica.ChatServices;
+using Ollabotica.InputProcessors;
 using OllamaSharp;
 using Slack.NetStandard.AsyncEnumerable;
 using Slack.NetStandard.Interaction;
@@ -100,12 +101,13 @@ public class SlackBotService : IBotService
             MessageId = slackMessage.EnvelopeId,
             IncomingText = message.Text,
             ChatId = slackMessage.EnvelopeId,
-            UserIdentity = $"{message.User}"
+            UserIdentity = $"{message.User}",
+            Received = _config.Now
         };
 
         if (_config.AllowedChatIds.Contains(message.User))
         {
-            if (m.IncomingText != null)
+            if (!string.IsNullOrWhiteSpace(m.IncomingText))
             {
                 _logger.LogInformation(
                     $"Received chat slackMessage from: {m.UserIdentity} for {_slackChatService.BotId}: {m.IncomingText}");
@@ -117,8 +119,10 @@ public class SlackBotService : IBotService
 
                     if (shouldContinue)
                     {
-                        var p = "";
-                        if (string.IsNullOrWhiteSpace(p)) p = m.IncomingText;
+                        var p = $"## VARIABLES:\nDate Time:\n{m.Received}\n";
+                        p += "----\n";
+                        p += $"## USER INPUT:\n{m.IncomingText}\n";
+                        p += "----\n";
                         // Send the prompt to Ollama and gather response
                         await foreach (var answerToken in _ollamaChat.Send(p))
                         {
@@ -127,6 +131,8 @@ public class SlackBotService : IBotService
                             await _messageOutputRouter.Route(m, _ollamaChat, _slackChatService, isAdmin, answerToken, _config);
                         }
                         await _messageOutputRouter.Route(m, _ollamaChat, _slackChatService, isAdmin, "\n", _config);
+                        await _messageOutputRouter.Route(m, _ollamaChat, _slackChatService, isAdmin, AssistantOutputProcessor.AssistantTerminator, _config);
+
                     }
                 }
                 catch (Exception e)

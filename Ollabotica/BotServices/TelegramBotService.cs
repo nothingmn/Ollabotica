@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic;
 using Ollabotica.ChatServices;
+using Ollabotica.InputProcessors;
 using OllamaSharp;
 using OllamaSharp.Models.Chat;
 using Telegram.Bot;
@@ -71,27 +72,32 @@ public class TelegramBotService : IBotService
 
             if (_config.AllowedChatIdsAsLong.Contains(message.Chat.Id))
             {
-                if (message.Text != null)
+                var m = new ChatMessage()
+                {
+                    MessageId = message.Chat.Id.ToString(),
+                    IncomingText = message.Text,
+                    ChatId = message.Chat.Id.ToString(),
+                    UserIdentity = $"{message.Chat.FirstName} {message.Chat.LastName}",
+                    Received = _config.Now
+                };
+                if (!string.IsNullOrWhiteSpace(m.IncomingText))
                 {
                     _logger.LogInformation(
                         $"Received chat message from: {message.Chat.Id} for {_telegramClient.BotId}: {message.Text}");
 
                     try
                     {
-                        var m = new ChatMessage()
-                        {
-                            MessageId = message.Chat.Id.ToString(),
-                            IncomingText = message.Text,
-                            ChatId = message.Chat.Id.ToString(),
-                            UserIdentity = $"{message.Chat.FirstName} {message.Chat.LastName}"
-                        };
+
                         // Route the message through the input processors
                         var shouldContinue = await _messageInputRouter.Route(m, _ollamaChat, _telegramChatService, isAdmin, _config);
 
                         if (shouldContinue)
                         {
-                            var p = "";
-                            if (string.IsNullOrWhiteSpace(p)) p = message.Text;
+                            var p = $"## VARIABLES:\nDate Time:\n{m.Received}\n";
+                            p += "----\n";
+                            p += $"## USER INPUT:\n{message.Text}\n";
+                            p += "----\n";
+
                             // Send the prompt to Ollama and gather response
                             await foreach (var answerToken in _ollamaChat.Send(p))
                             {
@@ -99,6 +105,7 @@ public class TelegramBotService : IBotService
                                 await _messageOutputRouter.Route(m, _ollamaChat, _telegramChatService, isAdmin, answerToken, _config);
                             }
                             await _messageOutputRouter.Route(m, _ollamaChat, _telegramChatService, isAdmin, "\n", _config);
+                            await _messageOutputRouter.Route(m, _ollamaChat, _telegramChatService, isAdmin, AssistantOutputProcessor.AssistantTerminator, _config);
                         }
                     }
                     catch (Exception e)

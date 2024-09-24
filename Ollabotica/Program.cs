@@ -8,6 +8,8 @@ using System.Net.Http.Headers;
 using Ollabotica.ChatServices;
 using Telegram.Bot;
 using Ollabotica.BotServices;
+using Ollabotica.OutputProcessors.Assistant.Actions;
+using Ollabotica.OutputProcessors.Assistant;
 
 namespace Ollabotica;
 
@@ -109,13 +111,19 @@ public class Program
                 services.AddTransient<IMessageInputProcessor, ModelManagerInputProcessor>();
 
                 //services.AddTransient<IMessageInputProcessor, EchoUserTextInputProcessor>();
-                services.AddTransient<IMessageOutputProcessor, BasicChatOutputProcessor>();
+                //services.AddTransient<IMessageOutputProcessor, BasicChatOutputProcessor>();
+                services.AddTransient<IMessageOutputProcessor, AssistantOutputProcessor>();
 
                 services.AddTransient<SlackChatService, SlackChatService>();
                 services.AddTransient<TelegramChatService, TelegramChatService>();
-                services.AddTransient<DiscordChatService, DiscordChatService>();
 
                 services.AddHostedService<BotHostedService>();
+
+                services.AddTransient<Api, Api>();
+
+
+                services.AddKeyedTransient<ITaskAction, CreateTimerAction>(typeof(CreateTimer).FullName);
+
             });
 }
 

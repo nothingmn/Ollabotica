@@ -32,6 +32,27 @@ public class BotConfiguration
 
     public string AdminChatIdsRaw { get; set; }
 
+    public string TimeZone { get; set; }
+    public string TaskEndPoint { get; set; }
+    
+    public DateTimeOffset Now { 
+        get
+        {
+            // Get the current UTC time
+            DateTime utcTime = DateTime.UtcNow;
+
+            // Convert the UTC time to the desired time zone
+            DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(utcTime, TimeZoneInfo);
+            return localTime;
+        } 
+    }
+    public TimeZoneInfo TimeZoneInfo
+    {
+        get
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(this.TimeZone);
+        }
+    }
     public List<long> AllowedChatIdsAsLong
     {
         get
