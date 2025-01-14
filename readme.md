@@ -70,3 +70,62 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
 
 ```
+
+Here is a breakdown of the settings:
+
+```json
+{
+  "Bots": [
+    {
+      "Name": "DevelopmentBot",
+      "ServiceType": "Telegram",
+      "ChatAuthToken": "7534503146:AAF9N-VFUEBPP46XciOGDANRLTKzVUq1bRM",
+      "OllamaUrl": "http://192.168.194.41:8080/ollama/api",
+      "OllamaToken": "sk-9906764735554163917f85eb46071b8b",
+      "DefaultModel": "llama3.2:3b",
+      "AllowedChatIdsRaw": "502225909,1077146670",
+      "AdminChatIdsRaw": "502225909",
+      "TimeZone": "Pacific Standard Time"
+    }
+  ]
+}
+```
+
+
+```
+"Name": "DevelopmentBot"
+``` 
+- Used in logging to differentiate the log messages per bot
+- Used to partition chats when saved and loaded to/from disk
+
+```
+"TelegramToken": "7536663146:AAF9N-VFU5555555NRLTKzVUq1bRM",
+```
+- BotFather issued token
+
+```
+"OllamaUrl": "http://192.168.194.41:3000/ollama/api",
+"OllamaToken": "eyJhbGciasdfyhdfygjhgfyhsI6IkpXVCJ9.eyJpZCI6IjRmZjIyOTA2LTgwYTEtNDllNS05ODMxLWUzNDQ5YmU3YWFmNCJ9.s4hqSnlWGQX46HI3zeW46ZJLUDhhiOJEhPLwPn5MrRs",
+```
+- Your Ollama Web UI Instance API endoin (NOT ollama directly)
+- The token, grab a JWT token from the UI under your user settings
+
+```
+"DefaultModel": "dev-bot",
+```
+- Use any model from the Workspaces in Ollama Web UI
+
+```
+"AllowedChatIdsRaw": "544445909,107787674540",
+```
+- A list of chat IDs which are allowed to talk to the bot
+
+```
+"AdminChatIdsRaw": "544445909"
+```
+- A list of chat Ids which are allowed to admin the bot (download new models, delete, etc.)
+
+
+Keep in mind, "Bots" is an array, so have as many as you want!
+
+
