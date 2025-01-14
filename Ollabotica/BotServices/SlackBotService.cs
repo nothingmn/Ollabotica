@@ -113,7 +113,7 @@ public class SlackBotService : IBotService {
                         p += $"## USER INPUT:\n{m.IncomingText}\n";
                         p += "----\n";
                         // Send the prompt to Ollama and gather response
-                        await foreach (var answerToken in _ollamaChat.Send(p)) {
+                        await foreach (var answerToken in _ollamaChat.SendAsync(p)) {
                             await _slackChatService.SendChatActionAsync(m, "Typing");
                             m.OutgoingText += p;
                             await _messageOutputRouter.Route(m, _ollamaChat, _slackChatService, isAdmin, answerToken, _config);

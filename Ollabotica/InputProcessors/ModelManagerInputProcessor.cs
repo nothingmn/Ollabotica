@@ -16,32 +16,24 @@ namespace Ollabotica.InputProcessors;
 
 [Trigger(Trigger = "listmodels", Description = "List all available models.")]
 [Trigger(Trigger = "usemodel", Description = "Change the current chat to use a different model. /usemodel <name>")]
-public class ModelManagerInputProcessor : IMessageInputProcessor
-{
+public class ModelManagerInputProcessor : IMessageInputProcessor {
     private readonly ILogger<ModelManagerInputProcessor> _log;
 
-    public ModelManagerInputProcessor(ILogger<ModelManagerInputProcessor> log)
-    {
+    public ModelManagerInputProcessor(ILogger<ModelManagerInputProcessor> log) {
         _log = log;
     }
 
-    public async Task<bool> Handle(ChatMessage message, OllamaSharp.Chat ollamaChat, IChatService chat, bool isAdmin, BotConfiguration botConfiguration)
-    {
-        if (message.IncomingText.StartsWith("/listmodels", StringComparison.InvariantCultureIgnoreCase))
-        {
+    public async Task<bool> Handle(ChatMessage message, OllamaSharp.Chat ollamaChat, IChatService chat, bool isAdmin, BotConfiguration botConfiguration) {
+        if (message.IncomingText.StartsWith("/listmodels", StringComparison.InvariantCultureIgnoreCase)) {
             await chat.SendChatActionAsync(message, ChatAction.Typing.ToString());
 
-            var models = await ollamaChat.Client.ListLocalModels();
-            if (!models.Any())
-            {
+            var models = await ollamaChat.Client.ListLocalModelsAsync();
+            if (!models.Any()) {
                 await chat.SendTextMessageAsync(message, "No models found.");
-            }
-            else
-            {
+            } else {
                 var modelList = new StringBuilder();
                 modelList.AppendLine("Available models:");
-                foreach (var m in models)
-                {
+                foreach (var m in models) {
                     modelList.AppendLine($"  {m.Name} ({m.Details.ParameterSize})");
                 }
                 await chat.SendTextMessageAsync(message, modelList.ToString());
@@ -49,28 +41,23 @@ public class ModelManagerInputProcessor : IMessageInputProcessor
 
             return false;
         }
-        if (message.IncomingText.StartsWith("/usemodel", StringComparison.InvariantCultureIgnoreCase))
-        {
+        if (message.IncomingText.StartsWith("/usemodel", StringComparison.InvariantCultureIgnoreCase)) {
             await chat.SendChatActionAsync(message, ChatAction.Typing.ToString());
 
             var name = message.IncomingText.Substring("/usemodel".Length).Trim();
-            if (string.IsNullOrWhiteSpace(name))
-            {
+            if (string.IsNullOrWhiteSpace(name)) {
                 await chat.SendChatActionAsync(message, ChatAction.Typing.ToString());
                 await chat.SendTextMessageAsync(message, $"Please provide a name for the model to use.");
                 _log.LogInformation("Trying to use a model with no name specified.");
                 return false;
             }
 
-            var models = await ollamaChat.Client.ListLocalModels();
+            var models = await ollamaChat.Client.ListLocalModelsAsync();
             var existingModel = models.FirstOrDefault(m => m.Name == name);
-            if (existingModel is null)
-            {
+            if (existingModel is null) {
                 await chat.SendTextMessageAsync(message, $"Model {name} not found.");
                 return false;
-            }
-            else
-            {
+            } else {
                 ollamaChat.Model = existingModel.Name;
                 ollamaChat.Client.SelectedModel = existingModel.Name;
                 await chat.SendTextMessageAsync(message, $"Model {name} selected.");

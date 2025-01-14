@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using Ollabotica.ChatServices;
 using Telegram.Bot;
 using Ollabotica.BotServices;
+using Ollabotica.OllamaClient;
 
 namespace Ollabotica;
 
@@ -105,6 +106,7 @@ public class Program {
 
                 services.AddTransient<SlackChatService, SlackChatService>();
                 services.AddTransient<TelegramChatService, TelegramChatService>();
+                services.AddTransient<ILLMClient, OllamaWebUILLMClient>();
 
                 services.AddHostedService<BotHostedService>();
             });
