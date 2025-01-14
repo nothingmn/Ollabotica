@@ -6,9 +6,6 @@ using Telegram.Bot.Types.Enums;
 
 namespace Ollabotica.BotServices;
 
-/// <summary>
-/// This class will handle a single bot's Telegram and Ollama connections.
-/// </summary>
 public class TelegramBotService : IBotService {
     private BotConfiguration _config;
     private TelegramBotClient _telegramClient;
@@ -18,7 +15,6 @@ public class TelegramBotService : IBotService {
 
     private IChatService _telegramChatService;
 
-    // Inject all required dependencies via constructor
     public TelegramBotService(ILogger<TelegramBotService> logger, ILLMClient lLMClient) {
         _logger = logger;
         this._lLMClient = lLMClient;

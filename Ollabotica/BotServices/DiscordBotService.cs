@@ -5,9 +5,6 @@ using Ollabotica.ChatServices;
 
 namespace Ollabotica.BotServices;
 
-/// <summary>
-/// This class will handle a single bot's Slack and Ollama connections.
-/// </summary>
 public class DiscordBotService : IBotService {
     private BotConfiguration _config;
     private readonly ILogger<DiscordBotService> _logger;
@@ -16,7 +13,6 @@ public class DiscordBotService : IBotService {
     private DiscordSocketClient _client;
     private readonly ILLMClient _lLMClient;
 
-    // Inject all required dependencies via constructor
     public DiscordBotService(ILogger<DiscordBotService> logger, ILLMClient lLMClient, DiscordChatService chatService) {
         _logger = logger;
         _chatService = chatService;
@@ -27,10 +23,8 @@ public class DiscordBotService : IBotService {
     public async Task StartAsync(BotConfiguration botConfig) {
         _config = botConfig;
         await _lLMClient.Init(botConfig);
-        // Create a new instance of DiscordSocketClient
         _client = new DiscordSocketClient();
 
-        // Set the token and login
         _client.Log += Log;
         _client.MessageReceived += MessageReceived;
 

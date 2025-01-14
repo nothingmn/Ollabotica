@@ -6,9 +6,6 @@ using Slack.NetStandard.Socket;
 
 namespace Ollabotica.BotServices;
 
-/// <summary>
-/// This class will handle a single bot's Slack and Ollama connections.
-/// </summary>
 public class SlackBotService : IBotService {
     private BotConfiguration _config;
     private SocketModeClient _slackClient;
@@ -19,7 +16,6 @@ public class SlackBotService : IBotService {
 
     private CancellationTokenSource _cts;
 
-    // Inject all required dependencies via constructor
     public SlackBotService(ILogger<SlackBotService> logger, ILLMClient lLMClient, SlackChatService chatService) {
         _logger = logger;
         _lLMClient = lLMClient;
@@ -56,7 +52,6 @@ public class SlackBotService : IBotService {
         if (!slackMessage.Type.Equals("events_api"))
             return; // Ignore bot messages
 
-        //(Slack.NetStandard.EventsApi.EventCallback)slackMessage.Payload).Event
         var payload = (slackMessage.Payload as Slack.NetStandard.EventsApi.EventCallback);
         if (payload is null)
             return;
