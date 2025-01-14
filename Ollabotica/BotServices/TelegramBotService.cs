@@ -53,12 +53,19 @@ public class TelegramBotService : IBotService {
                     IncomingText = message.Text,
                     ChatId = message.Chat.Id.ToString(),
                     UserIdentity = $"{message.Chat.FirstName} {message.Chat.LastName}",
-                    Received = _config.Now
+                    Received = _config.Now,
+                    Mentioned = message.Text.Contains(_config.Name, StringComparison.InvariantCultureIgnoreCase)
                 };
-                if (!string.IsNullOrWhiteSpace(m.IncomingText)) {
+
+                //does it have any text
+                bool shouldSendToLLM = !string.IsNullOrWhiteSpace(m.IncomingText);
+                //has text, and are we limiting by mentions only?  if so, only send if mentioned
+                if (shouldSendToLLM && _config.MentionsOnly) {
+                    shouldSendToLLM = m.Mentioned;
+                }
+
+                if (shouldSendToLLM) {
                     await _lLMClient.Send(m, _telegramChatService, isAdmin, cancellationToken);
-                } else {
-                    await _telegramClient.SendTextMessageAsync(message.Chat.Id.ToString(), "I can only process text messages.", cancellationToken: cancellationToken);
                 }
             } else {
                 _logger.LogWarning($"Received message from unauthorized chat: {message.Chat.Id}");

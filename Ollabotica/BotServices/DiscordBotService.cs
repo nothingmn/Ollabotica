@@ -64,7 +64,8 @@ public class DiscordBotService : IBotService {
             Channel = message.Channel,
             IncomingText = message.Content,
             UserIdentity = $"{_client.CurrentUser.GlobalName}",
-            Received = _config.Now
+            Received = _config.Now,
+            Mentioned = message.Content.Contains(_config.Name, StringComparison.InvariantCultureIgnoreCase)
         };
 
         if (isAllowed) {
@@ -72,7 +73,16 @@ public class DiscordBotService : IBotService {
                 _logger.LogInformation($"Received chat slackMessage from: {m.UserIdentity} for {message.Channel.Name}: {m.IncomingText}");
 
                 try {
-                    await _lLMClient.Send(m, _chatService, isAdmin, _cts.Token);
+                    //does it have any text
+                    bool shouldSendToLLM = !string.IsNullOrWhiteSpace(m.IncomingText);
+                    //has text, and are we limiting by mentions only?  if so, only send if mentioned
+                    if (shouldSendToLLM && _config.MentionsOnly) {
+                        shouldSendToLLM = m.Mentioned;
+                    }
+
+                    if (shouldSendToLLM) {
+                        await _lLMClient.Send(m, _chatService, isAdmin, _cts.Token);
+                    }
                 } catch (Exception e) {
                     _logger.LogError(e, $"Error processing slackMessage {m.ChatId}");
                     if (isAdmin) {

@@ -1,4 +1,5 @@
 ﻿using System.Net.WebSockets;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Ollabotica.ChatServices;
 using Slack.NetStandard.AsyncEnumerable;
@@ -70,7 +71,8 @@ public class SlackBotService : IBotService {
             IncomingText = message.Text,
             ChatId = slackMessage.EnvelopeId,
             UserIdentity = $"{message.User}",
-            Received = _config.Now
+            Received = _config.Now,
+            Mentioned = message.Text.Contains(_config.Name, StringComparison.InvariantCultureIgnoreCase)
         };
 
         if (_config.AllowedChatIds.Contains(message.User)) {
@@ -79,7 +81,16 @@ public class SlackBotService : IBotService {
                     $"Received chat slackMessage from: {m.UserIdentity} for {_slackChatService.BotId}: {m.IncomingText}");
 
                 try {
-                    await _lLMClient.Send(m, _slackChatService, isAdmin, _cts.Token);
+                    //does it have any text
+                    bool shouldSendToLLM = !string.IsNullOrWhiteSpace(m.IncomingText);
+                    //has text, and are we limiting by mentions only?  if so, only send if mentioned
+                    if (shouldSendToLLM && _config.MentionsOnly) {
+                        shouldSendToLLM = m.Mentioned;
+                    }
+
+                    if (shouldSendToLLM) {
+                        await _lLMClient.Send(m, _slackChatService, isAdmin, _cts.Token);
+                    }
                 } catch (Exception e) {
                     _logger.LogError(e, $"Error processing slackMessage {m.ChatId}");
                     if (isAdmin) {

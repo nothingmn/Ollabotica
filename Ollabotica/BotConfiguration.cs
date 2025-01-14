@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ollabotica;
 
-public enum ServiceTypes
-{
+public enum ServiceTypes {
     Telegram,
     Slack,
     Discord
@@ -16,9 +15,9 @@ public enum ServiceTypes
 /// <summary>
 /// This class will hold the configuration properties for each bot.
 /// </summary>
-public class BotConfiguration
-{
+public class BotConfiguration {
     public string Name { get; set; }
+    public bool MentionsOnly { get; set; } = false; //for grouped chats, we might want to only trigger the bot when the user mentions their name
     public ServiceTypes ServiceType { get; set; } = ServiceTypes.Telegram;
     public string ChatAuthToken { get; set; }
     public string OllamaUrl { get; set; }
@@ -34,59 +33,50 @@ public class BotConfiguration
 
     public string TimeZone { get; set; }
     public string TaskEndPoint { get; set; }
-    
-    public DateTimeOffset Now { 
-        get
-        {
+
+    public DateTimeOffset Now {
+        get {
             // Get the current UTC time
             DateTime utcTime = DateTime.UtcNow;
 
             // Convert the UTC time to the desired time zone
             DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(utcTime, TimeZoneInfo);
             return localTime;
-        } 
+        }
     }
-    public TimeZoneInfo TimeZoneInfo
-    {
-        get
-        {
+
+    public TimeZoneInfo TimeZoneInfo {
+        get {
             return TimeZoneInfo.FindSystemTimeZoneById(this.TimeZone);
         }
     }
-    public List<long> AllowedChatIdsAsLong
-    {
-        get
-        {
+
+    public List<long> AllowedChatIdsAsLong {
+        get {
             return AllowedChatIdsRaw?.Split(',')
                 .Select(id => long.Parse(id.Trim()))
                 .ToList() ?? new List<long>();
         }
     }
 
-    public List<long> AdminChatIdsAsLong
-    {
-        get
-        {
+    public List<long> AdminChatIdsAsLong {
+        get {
             return AdminChatIdsRaw?.Split(',')
                 .Select(id => long.Parse(id.Trim()))
                 .ToList() ?? new List<long>();
         }
     }
 
-    public List<string> AllowedChatIds
-    {
-        get
-        {
+    public List<string> AllowedChatIds {
+        get {
             return AllowedChatIdsRaw?.Split(',')
                 .Select(id => id.Trim())
                 .ToList() ?? new List<string>();
         }
     }
 
-    public List<string> AdminChatIds
-    {
-        get
-        {
+    public List<string> AdminChatIds {
+        get {
             return AdminChatIdsRaw?.Split(',')
                 .Select(id => id.Trim())
                 .ToList() ?? new List<string>();
