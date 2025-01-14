@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,10 +9,14 @@ using Telegram.Bot.Types;
 
 namespace Ollabotica.InputProcessors;
 
-public class PromptFillingInputProcessor : IMessageInputProcessor
-{
-    public Task<bool> Handle(ChatMessage message, OllamaSharp.Chat ollamaChat, IChatService chat, bool isAdmin, BotConfiguration botConfiguration)
-    {
+public class PromptFillingInputProcessor : IMessageInputProcessor {
+    private readonly ILogger<PromptFillingInputProcessor> log;
+
+    public PromptFillingInputProcessor(ILogger<PromptFillingInputProcessor> log) {
+        this.log = log;
+    }
+
+    public Task<bool> Handle(ChatMessage message, OllamaSharp.Chat ollamaChat, IChatService chat, bool isAdmin, BotConfiguration botConfiguration) {
         var prompt = new StringBuilder();
         // Fill in the prompt information, system instructions, and user context
         prompt.AppendLine("System Instructions:");
@@ -31,6 +36,8 @@ public class PromptFillingInputProcessor : IMessageInputProcessor
         prompt.AppendLine("- Maximum response length: 200 words");
         prompt.AppendLine("- Output format: Step-by-step guide");
         prompt.AppendLine("- Response style: Detailed technical instruction");
+
+        log.LogInformation(prompt.ToString());
 
         return Task.FromResult(true);
     }

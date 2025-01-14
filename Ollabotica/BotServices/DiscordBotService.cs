@@ -27,8 +27,7 @@ namespace Ollabotica.BotServices;
 /// <summary>
 /// This class will handle a single bot's Slack and Ollama connections.
 /// </summary>
-public class DiscordBotService : IBotService
-{
+public class DiscordBotService : IBotService {
     private BotConfiguration _config;
     private OllamaApiClient _ollamaClient;
     private readonly ILogger<DiscordBotService> _logger;
@@ -40,8 +39,7 @@ public class DiscordBotService : IBotService
     private DiscordSocketClient _client;
 
     // Inject all required dependencies via constructor
-    public DiscordBotService(ILogger<DiscordBotService> logger, MessageInputRouter messageInputRouter, MessageOutputRouter messageOutputRouter, DiscordChatService chatService)
-    {
+    public DiscordBotService(ILogger<DiscordBotService> logger, MessageInputRouter messageInputRouter, MessageOutputRouter messageOutputRouter, DiscordChatService chatService) {
         _logger = logger;
         _messageInputRouter = messageInputRouter;
         _messageOutputRouter = messageOutputRouter;
@@ -49,8 +47,7 @@ public class DiscordBotService : IBotService
         _cts = new CancellationTokenSource();
     }
 
-    public async Task StartAsync(BotConfiguration botConfig)
-    {
+    public async Task StartAsync(BotConfiguration botConfig) {
         _config = botConfig;
         _ollamaClient = new OllamaApiClient(botConfig.OllamaUrl, botConfig.DefaultModel);
         _ollamaClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {botConfig.OllamaToken}");
@@ -69,12 +66,13 @@ public class DiscordBotService : IBotService
         _logger.LogInformation($"Bot {_config.Name} started for Slack.");
     }
 
-    private async Task MessageReceived(SocketMessage message)
-    {
+    private async Task MessageReceived(SocketMessage message) {
         // Ensure the message is from a user and mentions the bot
-        if (message.Author.IsBot) return; // Ignore messages from bots
+        if (message.Author.IsBot)
+            return; // Ignore messages from bots
         var userMessage = message as SocketUserMessage;
-        if (userMessage == null) return;
+        if (userMessage == null)
+            return;
 
         bool isAdmin = _config.AdminChatIds.Contains(_client.CurrentUser.Id.ToString());
         bool isAllowed = _config.AllowedChatIds.Contains(_client.CurrentUser.Id.ToString());
@@ -82,79 +80,64 @@ public class DiscordBotService : IBotService
         var mentioned = userMessage.MentionedUsers;
 
         _logger.LogInformation($"Received: {message.Content} from user {_client.CurrentUser.Username} in {message.Channel.Name}");
-        if (!isAllowed) return;
+        if (!isAllowed)
+            return;
 
         // Check if the message is a DM (private message)
         var dm = (message.Channel is IDMChannel);
         var isMentioned = mentioned.Any(user => user.Id == _client.CurrentUser.Id);
 
         //exit if we are NOT mentioned in a non DM
-        if (!dm && !isMentioned) return;
+        if (!dm && !isMentioned)
+            return;
 
-        var m = new ChatMessage()
-        {
+        var m = new ChatMessage() {
             Channel = message.Channel,
             IncomingText = message.Content,
             UserIdentity = $"{_client.CurrentUser.GlobalName}",
             Received = _config.Now
         };
 
-        if (isAllowed)
-        {
-            if (!string.IsNullOrWhiteSpace(m.IncomingText))
-            {
+        if (isAllowed) {
+            if (!string.IsNullOrWhiteSpace(m.IncomingText)) {
                 _logger.LogInformation($"Received chat slackMessage from: {m.UserIdentity} for {message.Channel.Name}: {m.IncomingText}");
 
-                try
-                {
+                try {
                     // Route the slackMessage through the input processors
                     var shouldContinue = await _messageInputRouter.Route(m, _ollamaChat, _chatService, isAdmin, _config);
 
-                    if (shouldContinue)
-                    {
+                    if (shouldContinue) {
                         var p = $"## VARIABLES:\nDate Time:\n{m.Received}\n";
                         p += "----\n";
                         p += $"## USER INPUT:\n{m.IncomingText}\n";
                         p += "----\n";
                         // Send the prompt to Ollama and gather response
-                        await foreach (var answerToken in _ollamaChat.Send(p))
-                        {
+                        await foreach (var answerToken in _ollamaChat.Send(p)) {
                             await _chatService.SendChatActionAsync(m, "Typing");
                             m.OutgoingText += p;
                             await _messageOutputRouter.Route(m, _ollamaChat, _chatService, isAdmin, answerToken, _config);
                         }
                         await _messageOutputRouter.Route(m, _ollamaChat, _chatService, isAdmin, "\n", _config);
-                        await _messageOutputRouter.Route(m, _ollamaChat, _chatService, isAdmin, AssistantOutputProcessor.AssistantTerminator, _config);
-
                     }
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     _logger.LogError(e, $"Error processing slackMessage {m.ChatId}");
-                    if (isAdmin)
-                    {
+                    if (isAdmin) {
                         m.OutgoingText = e.ToString();
                         await _chatService.SendTextMessageAsync(m);
                     }
                 }
-            }
-            else
-            {
+            } else {
                 m.OutgoingText = "I can only process text messages.";
                 await _chatService.SendTextMessageAsync(m);
             }
-        }
-        else
-        {
+        } else {
             _logger.LogWarning($"Received slackMessage from unauthorized chat: {_client.CurrentUser.Id} {_client.CurrentUser.GlobalName}");
         }
     }
 
-    private Task Log(LogMessage msg)
-    {
+    private Task Log(LogMessage msg) {
         // Map Discord's LogSeverity to ILogger's log levels
-        switch (msg.Severity)
-        {
+        switch (msg.Severity) {
             case LogSeverity.Critical:
                 _logger.LogCritical(msg.Exception, "[{Source}] {Message}", msg.Source, msg.Message);
                 break;
@@ -187,8 +170,7 @@ public class DiscordBotService : IBotService
         return Task.CompletedTask;
     }
 
-    public async Task StopAsync()
-    {
+    public async Task StopAsync() {
         _cts.Cancel();
         _logger.LogInformation("Bot stopped.");
     }

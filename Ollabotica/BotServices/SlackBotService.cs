@@ -25,8 +25,7 @@ namespace Ollabotica.BotServices;
 /// <summary>
 /// This class will handle a single bot's Slack and Ollama connections.
 /// </summary>
-public class SlackBotService : IBotService
-{
+public class SlackBotService : IBotService {
     private BotConfiguration _config;
     private SocketModeClient _slackClient;
     private OllamaApiClient _ollamaClient;
@@ -39,8 +38,7 @@ public class SlackBotService : IBotService
     private CancellationTokenSource _cts;
 
     // Inject all required dependencies via constructor
-    public SlackBotService(ILogger<SlackBotService> logger, MessageInputRouter messageInputRouter, MessageOutputRouter messageOutputRouter, SlackChatService chatService)
-    {
+    public SlackBotService(ILogger<SlackBotService> logger, MessageInputRouter messageInputRouter, MessageOutputRouter messageOutputRouter, SlackChatService chatService) {
         _logger = logger;
         _messageInputRouter = messageInputRouter;
         _messageOutputRouter = messageOutputRouter;
@@ -48,8 +46,7 @@ public class SlackBotService : IBotService
         _cts = new CancellationTokenSource();
     }
 
-    public async Task StartAsync(BotConfiguration botConfig)
-    {
+    public async Task StartAsync(BotConfiguration botConfig) {
         _config = botConfig;
         _ollamaClient = new OllamaApiClient(botConfig.OllamaUrl, botConfig.DefaultModel);
         _ollamaClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {botConfig.OllamaToken}");
@@ -61,24 +58,21 @@ public class SlackBotService : IBotService
         await _slackClient.ConnectAsync(botConfig.ChatAuthToken);
         _slackChatService.Init(_slackClient);
 
-        await foreach (var envelope in _slackClient.EnvelopeAsyncEnumerable(_cts.Token))
-        {
+        await foreach (var envelope in _slackClient.EnvelopeAsyncEnumerable(_cts.Token)) {
             await HandleMessageAsync(envelope);
         }
 
         _logger.LogInformation($"Bot {_config.Name} started for Slack.");
     }
 
-    public async Task StopAsync()
-    {
+    public async Task StopAsync() {
         _cts.Cancel();
         await _clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "App shutting down", CancellationToken.None);
         _slackClient.Dispose();
         _logger.LogInformation("Bot stopped.");
     }
 
-    private async Task HandleMessageAsync(Envelope slackMessage)
-    {
+    private async Task HandleMessageAsync(Envelope slackMessage) {
         if (!slackMessage.Type.Equals("events_api"))
             return; // Ignore bot messages
 
@@ -96,8 +90,7 @@ public class SlackBotService : IBotService
 
         bool isAdmin = _config.AdminChatIds.Contains(message.User);
 
-        var m = new ChatMessage()
-        {
+        var m = new ChatMessage() {
             MessageId = slackMessage.EnvelopeId,
             IncomingText = message.Text,
             ChatId = slackMessage.EnvelopeId,
@@ -105,54 +98,40 @@ public class SlackBotService : IBotService
             Received = _config.Now
         };
 
-        if (_config.AllowedChatIds.Contains(message.User))
-        {
-            if (!string.IsNullOrWhiteSpace(m.IncomingText))
-            {
+        if (_config.AllowedChatIds.Contains(message.User)) {
+            if (!string.IsNullOrWhiteSpace(m.IncomingText)) {
                 _logger.LogInformation(
                     $"Received chat slackMessage from: {m.UserIdentity} for {_slackChatService.BotId}: {m.IncomingText}");
 
-                try
-                {
+                try {
                     // Route the slackMessage through the input processors
                     var shouldContinue = await _messageInputRouter.Route(m, _ollamaChat, _slackChatService, isAdmin, _config);
 
-                    if (shouldContinue)
-                    {
+                    if (shouldContinue) {
                         var p = $"## VARIABLES:\nDate Time:\n{m.Received}\n";
                         p += "----\n";
                         p += $"## USER INPUT:\n{m.IncomingText}\n";
                         p += "----\n";
                         // Send the prompt to Ollama and gather response
-                        await foreach (var answerToken in _ollamaChat.Send(p))
-                        {
+                        await foreach (var answerToken in _ollamaChat.Send(p)) {
                             await _slackChatService.SendChatActionAsync(m, "Typing");
                             m.OutgoingText += p;
                             await _messageOutputRouter.Route(m, _ollamaChat, _slackChatService, isAdmin, answerToken, _config);
                         }
                         await _messageOutputRouter.Route(m, _ollamaChat, _slackChatService, isAdmin, "\n", _config);
-                        await _messageOutputRouter.Route(m, _ollamaChat, _slackChatService, isAdmin, AssistantOutputProcessor.AssistantTerminator, _config);
-
                     }
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     _logger.LogError(e, $"Error processing slackMessage {m.ChatId}");
-                    if (isAdmin)
-                    {
+                    if (isAdmin) {
                         m.OutgoingText = e.ToString();
                         await _slackChatService.SendTextMessageAsync(m);
                     }
                 }
-            }
-            else
-            {
+            } else {
                 m.OutgoingText = "I can only process text messages.";
                 await _slackChatService.SendTextMessageAsync(m);
             }
-        }
-        else
-        {
+        } else {
             _logger.LogWarning($"Received slackMessage from unauthorized chat: {message.User}");
         }
     }
