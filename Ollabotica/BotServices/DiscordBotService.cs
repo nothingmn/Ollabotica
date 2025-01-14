@@ -1,26 +1,7 @@
-﻿using System.Linq;
-using System.Net.WebSockets;
-using System.Text;
-using System.Text.Json;
-using System.Threading;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
-using Microsoft.AspNetCore.Mvc.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Ollabotica.ChatServices;
-using Ollabotica.InputProcessors;
-using OllamaSharp;
-using Slack.NetStandard.AsyncEnumerable;
-using Slack.NetStandard.Interaction;
-using Slack.NetStandard.Messages.Blocks;
-using Slack.NetStandard.Messages.Elements.RichText;
-using Slack.NetStandard.Socket;
-using SlackAPI;
-using SlackAPI.WebSocketMessages;
-using Telegram.Bot.Types.Enums;
 
 namespace Ollabotica.BotServices;
 
@@ -29,29 +10,23 @@ namespace Ollabotica.BotServices;
 /// </summary>
 public class DiscordBotService : IBotService {
     private BotConfiguration _config;
-    private OllamaApiClient _ollamaClient;
     private readonly ILogger<DiscordBotService> _logger;
-    private readonly MessageInputRouter _messageInputRouter;
-    private readonly MessageOutputRouter _messageOutputRouter;
     private readonly DiscordChatService _chatService;
-    private Chat _ollamaChat;
     private CancellationTokenSource _cts;
     private DiscordSocketClient _client;
+    private readonly ILLMClient _lLMClient;
 
     // Inject all required dependencies via constructor
-    public DiscordBotService(ILogger<DiscordBotService> logger, MessageInputRouter messageInputRouter, MessageOutputRouter messageOutputRouter, DiscordChatService chatService) {
+    public DiscordBotService(ILogger<DiscordBotService> logger, ILLMClient lLMClient, DiscordChatService chatService) {
         _logger = logger;
-        _messageInputRouter = messageInputRouter;
-        _messageOutputRouter = messageOutputRouter;
         _chatService = chatService;
         _cts = new CancellationTokenSource();
+        _lLMClient = lLMClient;
     }
 
     public async Task StartAsync(BotConfiguration botConfig) {
         _config = botConfig;
-        _ollamaClient = new OllamaApiClient(botConfig.OllamaUrl, botConfig.DefaultModel);
-        _ollamaClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {botConfig.OllamaToken}");
-        _ollamaChat = new Chat(_ollamaClient, "");
+        await _lLMClient.Init(botConfig);
         // Create a new instance of DiscordSocketClient
         _client = new DiscordSocketClient();
 
@@ -103,22 +78,7 @@ public class DiscordBotService : IBotService {
                 _logger.LogInformation($"Received chat slackMessage from: {m.UserIdentity} for {message.Channel.Name}: {m.IncomingText}");
 
                 try {
-                    // Route the slackMessage through the input processors
-                    var shouldContinue = await _messageInputRouter.Route(m, _ollamaChat, _chatService, isAdmin, _config);
-
-                    if (shouldContinue) {
-                        var p = $"## VARIABLES:\nDate Time:\n{m.Received}\n";
-                        p += "----\n";
-                        p += $"## USER INPUT:\n{m.IncomingText}\n";
-                        p += "----\n";
-                        // Send the prompt to Ollama and gather response
-                        await foreach (var answerToken in _ollamaChat.SendAsync(p)) {
-                            await _chatService.SendChatActionAsync(m, "Typing");
-                            m.OutgoingText += p;
-                            await _messageOutputRouter.Route(m, _ollamaChat, _chatService, isAdmin, answerToken, _config);
-                        }
-                        await _messageOutputRouter.Route(m, _ollamaChat, _chatService, isAdmin, "\n", _config);
-                    }
+                    await _lLMClient.Send(m, _chatService, isAdmin, _cts.Token);
                 } catch (Exception e) {
                     _logger.LogError(e, $"Error processing slackMessage {m.ChatId}");
                     if (isAdmin) {

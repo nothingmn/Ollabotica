@@ -14,9 +14,6 @@ public class TelegramBotService : IBotService {
     private TelegramBotClient _telegramClient;
     private readonly ILogger<TelegramBotService> _logger;
     private readonly ILLMClient _lLMClient;
-    private readonly MessageInputRouter _messageInputRouter;
-    private readonly MessageOutputRouter _messageOutputRouter;
-    private OllamaSharp.Chat _ollamaChat;
     private CancellationTokenSource _cts;
 
     private IChatService _telegramChatService;
@@ -38,8 +35,7 @@ public class TelegramBotService : IBotService {
 
         await _lLMClient.Init(botConfig);
 
-        _logger.LogInformation(
-            $"Bot {_config.Name} started for ChatAuthToken: {_config.ChatAuthToken} for Telgram BotId:{_telegramClient.BotId}");
+        _logger.LogInformation($"Bot {_config.Name} started for ChatAuthToken: {_config.ChatAuthToken} for Telgram BotId:{_telegramClient.BotId}");
     }
 
     public Task StopAsync() {
@@ -51,7 +47,7 @@ public class TelegramBotService : IBotService {
     private async Task HandleUpdateAsync(ITelegramBotClient client, Update update, CancellationToken cancellationToken) {
         if (update.Type == UpdateType.Message && update.Message != null) {
             var message = update.Message;
-            await _telegramClient.SendChatActionAsync(message.Chat.Id.ToString(), ChatAction.Typing);
+            await _telegramClient.SendChatActionAsync(message.Chat.Id.ToString(), ChatAction.Typing, cancellationToken: cancellationToken);
 
             bool isAdmin = _config.AdminChatIdsAsLong.Contains(message.Chat.Id);
 
