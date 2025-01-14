@@ -79,6 +79,7 @@ Here is a breakdown of the settings:
     {
       "Name": "DevelopmentBot",
       "ServiceType": "Telegram",
+      "MentionsOnly": false,
       "ChatAuthToken": "7534503146:AAF9N-VFUEBPP46XciOGDANRLTKzVUq1bRM",
       "OllamaUrl": "http://192.168.194.41:8080/ollama/api",
       "OllamaToken": "sk-9906764735554163917f85eb46071b8b",
@@ -97,6 +98,15 @@ Here is a breakdown of the settings:
 ``` 
 - Used in logging to differentiate the log messages per bot
 - Used to partition chats when saved and loaded to/from disk
+```
+"ServiceType": "Telegram",
+```
+- Used to indicate the type of service "Telegram", "Discord", or "Slack"
+
+```
+"MentionsOnly": false,
+```
+- Used to limit the interactions to only chat messages which include the Bots name, as stated in configuration.
 
 ```
 "TelegramToken": "7536663146:AAF9N-VFU5555555NRLTKzVUq1bRM",
